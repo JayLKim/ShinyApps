@@ -4,7 +4,7 @@
   <title>Simulating Multiplicity</title>
   <meta charset="utf-8">
   <meta name="description" content="Simulating Multiplicity">
-  <meta name="author" content="Jay Kim">
+  <meta name="author" content="J Kim">
   <meta name="generator" content="slidify" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -34,8 +34,8 @@
         <slide class="title-slide segue nobackground">
   <hgroup class="auto-fadein">
     <h1>Simulating Multiplicity</h1>
-    <h2></h2>
-    <p>Jay Kim<br/></p>
+    <h2>Coursera Course Project</h2>
+    <p>J Kim<br/></p>
   </hgroup>
   <article></article>  
 </slide>
@@ -44,26 +44,104 @@
     <!-- SLIDES -->
     <slide class="" id="slide-1" style="background:;">
   <hgroup>
-    <h2>Read-And-Delete</h2>
+    <h2>What is multiplicity?</h2>
   </hgroup>
   <article data-timings="">
-    <ol>
-<li>Edit YAML front matter</li>
-<li>Write using R Markdown</li>
-<li>Use an empty line followed by three dashes to separate slides!</li>
-</ol>
+    <ul>
+<li>Multiplicity occurs when performing several statistical inferences
+simultaneously. (e.g. high dimensional screening studies)</li>
+<li>We usually set a significance level at 0.05.
+
+<ul>
+<li>which means the acceptable probability to reject a true null hypothesis is 
+0.05 or less.</li>
+</ul></li>
+<li>However, when we conduct multiple statistical tests simultaneously,
+the overall type I error rate is higher than our expectations.</li>
+</ul>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="class" id="id" style="background:;">
+<slide class="" id="slide-2" style="background:;">
   <hgroup>
-    <h2>Slide 2</h2>
+    <h2>For example...</h2>
   </hgroup>
   <article data-timings="">
-    <p>Something</p>
+    <ul>
+<li>Suppose that we test 10 hypotheses simultaneously at the significance level
+\(\alpha = 0.05\).</li>
+<li>Assume that the hypotheses are all true and they are independent.</li>
+<li>Then, the probability to retain all hypotheses is
 
+<ul>
+<li>\((0.95)^{10} = 0.599\)</li>
+</ul></li>
+<li>Therefore, the probability to reject at least one true null hypothesis is
+
+<ul>
+<li>\(1 - 0.599 = 0.401\).</li>
+</ul></li>
+<li>It is much more higher than 0.05.</li>
+<li>But it may be hard for statistical novices, like me, to understand this fact.</li>
+<li>Simulation using R is helpful to get a clue of such a difficult concept.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Simulating multiplicity</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">df &lt;- numeric() ## Create an imaginary population
+columnnames &lt;- character()
+for(i in 1 : 10) {
+  variables &lt;- rnorm(100000)
+  df &lt;- cbind(df, variables)
+  columnnames &lt;- c(columnnames, paste(&quot;variable_&quot;, i))
+}
+colnames(df) &lt;- columnnames
+sample_id &lt;- sample(1 : 100000, size = 30 * 2) ## Sample 60 cases
+group_A &lt;- df[sample_id[1 : 30], ] ## Assign the sampled cases to each group
+group_B &lt;- df[sample_id[31 : 60], ]
+p_val &lt;- numeric() ## Calculate p-values
+for(i in 1 : 10) {
+  temp &lt;- t.test(group_A[, i], group_B[, i], var.equal = TRUE)$p.value
+  p_val &lt;- c(p_val, temp)
+}
+p_val_bonferroni &lt;- p.adjust(p_val, method = &quot;bonferroni&quot;) ## P-values adjustment
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Plotting results</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div style='float:left;width:48%;' class='centered'>
+  <p><img src="assets/fig/unnamed-chunk-2-1.png" alt="plot of chunk unnamed-chunk-2"> </p>
+
+</div>
+<div style='float:right;width:48%;'>
+  <p><img src="assets/fig/unnamed-chunk-3-1.png" alt="plot of chunk unnamed-chunk-3"> </p>
+
+</div>
+<div>
+  <p>Some p-values are quite close to 0.05 even though two samples are from 
+the same population. But adjusted p-values through Bonferroni method show more
+conservative results than the unadjusted ones.<br>
+The application I made, <a href="http://jaylkim.shinyapps.io/Multiplicity"><strong>Multiplicity</strong></a>, is designed for the simulation to
+visulaize the multiple comparisons problem</p>
+
+</div>
   </article>
   <!-- Presenter Notes -->
 </slide>
@@ -74,14 +152,26 @@
     <ul>
       <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=1 title='Read-And-Delete'>
+        data-slide=1 title='What is multiplicity?'>
          1
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=2 title='Slide 2'>
+        data-slide=2 title='For example...'>
          2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Simulating multiplicity'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Plotting results'>
+         4
       </a>
     </li>
   </ul>
@@ -102,7 +192,21 @@
     $("[rel='tooltip']").tooltip(); 
   });  
   </script>  
-  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
   <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   <!-- DONE LOADING HIGHLIGHTER JS FILES -->
